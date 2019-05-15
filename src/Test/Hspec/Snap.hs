@@ -205,7 +205,7 @@ snap site app spec = do
     Left err -> error $ show err
     Right (snaplet, initstate) ->
       afterAll (const $ closeSnaplet initstate) $
-        before (return (SnapHspecState Success site snaplet initstate mv (return ()) (return ()))) spec
+        before (return (SnapHspecState (Result "" Success) site snaplet initstate mv (return ()) (return ()))) spec
 
 -- | This allows you to change the default handler you are running
 -- requests against within a block. This is most likely useful for
@@ -338,10 +338,10 @@ eval act = do (SnapHspecState _ _site app is _mv bef aft) <- S.get
 
 -- | Records a test Success or Fail. Only the first Fail will be
 -- recorded (and will cause the whole block to Fail).
-setResult :: Result -> SnapHspecM b ()
+setResult :: ResultStatus -> SnapHspecM b ()
 setResult r = do (SnapHspecState r' s a i sess bef aft) <- S.get
                  case r' of
-                   Success -> S.put (SnapHspecState r s a i sess bef aft)
+                   Result _ Success -> S.put (SnapHspecState (Result "" r) s a i sess bef aft)
                    _ -> return ()
 
 -- | Asserts that a given stateful action will produce a specific different result after
